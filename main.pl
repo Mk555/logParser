@@ -1,9 +1,18 @@
 #/usr/bin/perl
 
+###############################
+#	IMPORTS
+###############################
+
 #use strict;
 use warnings;
 no warnings 'uninitialized';
 use Getopt::Std;
+
+
+###############################
+#	PARAMS
+###############################
 
 # Get the params w/ the std lib
 
@@ -22,9 +31,23 @@ if ( defined( $opt_h ) ){
 	print( "You are actually in human readable mode.\n" );
 }
 
-my $cs_text = "Error";
 
-# Create the variables
+###############################
+#	VARIABLES
+###############################
+
+# Levels of error
+my $cs_error = "<Error>";
+my $cs_warning = "<Warning>";
+my $cs_info = "<Notice>";
+
+# Fields of the logs
+my $vs_timestamp;
+my $vs_level;
+my $vs_type;
+my $vs_code;
+my $vs_description;
+
 
 #my $cs_files = `ls /home/mk_/DataTest/*.csv` ;
 my $vs_cpt = 0;
@@ -34,14 +57,18 @@ my @vt_result;
 my @vt_files;
 
 
+###############################
+#	CODE
+###############################
+
 
 # Get the path of the files
 # Original path : /home/mk_/DataTest/*.csv
-@vt_files = glob( $opt_p );
+@vt_files = glob( $opt_p . "/*" );
 
-# Charging the config files (Not the first thing to do)
 
-print( @vt_files );
+#print(@vt_files);
+
 
 # Foreach file
 foreach ( @vt_files ){
@@ -60,11 +87,17 @@ foreach ( @vt_files ){
 		$vs_row = $_;
 		
 # 		Search the words
-		if ( $vs_row =~ m/$cs_text/ ){
+		if ( $vs_row =~ m/$cs_error/  ){
 
 #			Save the line in the table
 			if ( defined( $opt_h ) ){
-				$vs_row = $vs_logFile . " : line " . $vs_cpt . " -> " . $vs_row;
+				($vs_timestamp, $vs_level, $vs_type, $vs_code, $vs_description) = split( '> <', $vs_row);
+				
+				# With this line, it prints the file name & the line. It's usefull if you whant to parse multiple log files.
+				#$vs_row = $vs_logFile . " : line " . $vs_cpt . " -> " . $vs_level . " : " . $vs_description;
+				
+				$vs_row = " -> " . $vs_level . " [" . $vs_code . "]  : " . $vs_description;
+				
 			}
 			push( @vt_result, $vs_row );
 #			Increment the cpt
@@ -92,23 +125,4 @@ print( "\n" );
 
 exit( 0 );
 
-# Foreach line of the result :
-# 	If the script is in human readable mode, print the line (try to color)
-# 	Then print the level of alert (Info/Warn/Crit)
-#
-# 	If the script is not human readable, print each line like that :
-# 	<Error message>|<Level of alert 0-3>
-#
-# Release the objects, then return the max level of alert.
-#
-#
-# -- END --
-#
-# (For now...)
-#
-#
-#
-#
-#
-#
-##
+
